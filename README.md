@@ -98,6 +98,7 @@ a. Create a new directory for the project:
 b. Set up a template project:
 
 You can either start from scratch or use one of ESP-IDF’s example projects as a template. Let’s use the Wi-Fi sniffer example:
+Be sure to of set your home directory [. $HOME/esp/esp-idf/export.sh] if the below command doesn't work for you.
 
     cp -r $IDF_PATH/examples/wifi/sniffer .
     cd sniffer
