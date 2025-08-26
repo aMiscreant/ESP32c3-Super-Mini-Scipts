@@ -1,0 +1,87 @@
+#include <Arduino.h>
+#include <esp_system.h>     // <-- for esp_fill_random()
+
+extern "C" {
+  #include "tweetnacl.h"
+}
+
+// NaCl variables
+#define NACL_PUBLICKEY_SIZE 32
+#define NACL_SECRETKEY_SIZE 32
+#define NACL_NONCE_SIZE     24
+#define NACL_BOX_OVERHEAD   16
+
+// Declare prototype to avoid implicit warning
+extern "C" int nacl_randombytes(uint8_t *buffer, size_t size);
+
+// Implementation of nacl_randombytes()
+extern "C" int nacl_randombytes(uint8_t *buf, size_t len) {
+    esp_fill_random(buf, len);
+    return 0;
+}
+
+// ——— Your pre-generated keypairs ———
+// Replace these with your actual 32-byte keys:
+static const uint8_t sender_pk[NACL_PUBLICKEY_SIZE] = {
+  0x1a,0x2b,0x3c,0x4d,0x5e,0x6f,0x7f,0x8a,
+  0x9b,0xac,0xbd,0xce,0xdf,0xe0,0xf1,0x02,
+  0x13,0x24,0x35,0x46,0x57,0x68,0x79,0x8a,
+  0x9b,0xac,0xbd,0xce,0xdf,0xe0,0xf1,0x02
+};
+static const uint8_t sender_sk[NACL_SECRETKEY_SIZE] = {
+  0x1b,0x2c,0x3d,0x4e,0x5f,0x6a,0x7b,0x8c,
+  0x9d,0xae,0xbf,0xc0,0xd1,0xe2,0xf3,0x04,
+  0x15,0x26,0x37,0x48,0x59,0x6a,0x7b,0x8c,
+  0x9d,0xae,0xbf,0xc0,0xd1,0xe2,0xf3,0x04
+};
+
+static const uint8_t receiver_pk[NACL_PUBLICKEY_SIZE] = {
+  0x5a,0x6b,0x7c,0x8d,0x9e,0xaf,0xb0,0xc1,
+  0xd2,0xe3,0xf4,0x05,0x16,0x27,0x38,0x49,
+  0x5a,0x6b,0x7c,0x8d,0x9e,0xaf,0xb0,0xc1,
+  0xd2,0xe3,0xf4,0x05,0x16,0x27,0x38,0x49
+};
+static const uint8_t receiver_sk[NACL_SECRETKEY_SIZE] = {
+  0x5b,0x6c,0x7d,0x8e,0x9f,0xa0,0xb1,0xc2,
+  0xd3,0xe4,0xf5,0x06,0x17,0x28,0x39,0x4a,
+  0x5b,0x6c,0x7d,0x8e,0x9f,0xa0,0xb1,0xc2,
+  0xd3,0xe4,0xf5,0x06,0x17,0x28,0x39,0x4a
+};
+
+// nonce buffer
+uint8_t nonce_[NACL_NONCE_SIZE];
+
+// helper: print bytes in hex
+void print_hex(const uint8_t *data, size_t len) {
+  for (size_t i = 0; i < len; ++i) {
+    if (data[i] < 0x10) Serial.print('0');
+    Serial.print(data[i], HEX);
+    Serial.print(' ');
+  }
+  Serial.println();
+}
+
+void setup() {
+  Serial.begin(115200);
+  delay(200);
+  Serial.println("\nTweetNaCl (raw) demo – hard-coded keys");
+
+  // generate a fresh nonce
+  nacl_randombytes(nonce_, NACL_NONCE_SIZE);
+  delay(10000);
+  // print everything
+  Serial.println("Sender Public Key:");
+  print_hex(sender_pk, NACL_PUBLICKEY_SIZE);
+  Serial.println("Sender Secret Key:");
+  print_hex(sender_sk, NACL_SECRETKEY_SIZE);
+  Serial.println("Receiver Public Key:");
+  print_hex(receiver_pk, NACL_PUBLICKEY_SIZE);
+  Serial.println("Receiver Secret Key:");
+  print_hex(receiver_sk, NACL_SECRETKEY_SIZE);
+  Serial.println("Nonce:");
+  print_hex(nonce_, NACL_NONCE_SIZE);
+}
+
+void loop() {
+  delay(1000);
+}
